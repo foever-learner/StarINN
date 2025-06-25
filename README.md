@@ -1,5 +1,4 @@
 # StarINN
-# StarINN: An Efficient Invertible Neural Network for Image Steganography
 
 Official code for
 
