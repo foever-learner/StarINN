@@ -17,11 +17,14 @@ class StarINN(nn.Module):
         self.inv10 = INV_block()
         self.inv11 = INV_block()
         self.inv12 = INV_block()
+        self.inv13 = INV_block()
+        self.inv14 = INV_block()
+        self.inv15 = INV_block()
+        self.inv16 = INV_block()
 
 
     def forward(self, x, rev=False):
         if not rev:
-            # 前向传播：顺序通过12个模块
             out = self.inv1(x)
             out = self.inv2(out)
             out = self.inv3(out)
@@ -33,10 +36,17 @@ class StarINN(nn.Module):
             out = self.inv9(out)
             out = self.inv10(out)
             out = self.inv11(out)
-            out = self.inv12(out)  
+            out = self.inv12(out)
+            out = self.inv13(out)
+            out = self.inv14(out)
+            out = self.inv15(out)
+            out = self.inv16(out)
         else:
-            # 反向传播：逆序通过12个模块
-            out = self.inv12(x, rev=True)  
+            out = self.inv16(x, rev=True)
+            out = self.inv15(out, rev=True)
+            out = self.inv14(out, rev=True)
+            out = self.inv13(out, rev=True)
+            out = self.inv12(out, rev=True)
             out = self.inv11(out, rev=True)
             out = self.inv10(out, rev=True)
             out = self.inv9(out, rev=True)
@@ -47,28 +57,7 @@ class StarINN(nn.Module):
             out = self.inv4(out, rev=True)
             out = self.inv3(out, rev=True)
             out = self.inv2(out, rev=True)
-            out = self.inv1(out, rev=True)  
+            out = self.inv1(out, rev=True)
         return out
 
 
-if __name__ == '__main__' :
-    net = StarstegoNet()
-    # 设置模型为评估模式（避免 Dropout 等不确定性）
-    net.eval()
-    # 定义输入数据，假设是 64x64 尺寸的彩色图像
-    input_data = torch.randn(1, 24, 64, 64).cuda()  # 随机输入，放在GPU上
-    # 将模型放到GPU上（如果可用）
-    net = net.cuda()
-
-    # 定义一个函数来测试和打印输出范围
-    def test_output_range(model, input_data, rev=False):
-        with torch.no_grad():  # 禁用梯度计算，加快测试速度
-            output = model(input_data, rev=rev)
-            output_min = output.min().item()
-            output_max = output.max().item()
-            print(f"Output range for rev={rev}: [{output_min}, {output_max}]")
-
-    # 测试 StarstegoNet
-    print("Testing StarstegoNet:")
-    test_output_range(net, input_data, rev=False)
-    test_output_range(net, input_data, rev=True)
